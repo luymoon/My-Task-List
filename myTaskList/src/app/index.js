@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   button: {
     position: 'absolute',
-    backgroundColor: '#000',
+    backgroundColor: '#D10812',
     bottom: '15%',
     alignSelf: 'center',
     borderRadius: 50,

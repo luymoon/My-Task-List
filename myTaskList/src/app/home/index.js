@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -18,35 +18,92 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Home() {
   const [textInput, setTextInput] = useState('');
   const [items, setItems] = useState([]);
+  useEffect(() => {
+    getItemsFromDevice();
+  }, [])
+  useEffect(() => {
+    saveItemToDevice();
+  }, [items])
+
 
   const saveItemToDevice = async () => {
-
+    try {
+      const itemJson = JSON.stringify(items);
+      await AsyncStorage.setItem('myTaskList', itemJson);
+    } catch (error) {
+      console.log(`Erro: ${error}`);
+    }
   }
 
   const getItemsFromDevice = async () => {
-
+    try {
+      const items = await AsyncStorage.getItem('galloShoppingList');
+      if (items != null) {
+        setItems(JSON.parse(items));
+      }
+    } catch (error) {
+      console.log(`Erro: ${error}`);
+    }
   }
 
   const addItem = () => {
-
+    //console.log(textInput);
+    if (textInput == '') {
+      Alert.alert(
+        'Ocorreu um problema :(',
+        'Por favor, informe o nome da tarefa');
+    } else {
+      const newItem = {
+        id: Math.random(),
+        name: textInput,
+        bought: false
+      };
+      setItems([...items, newItem]);
+      setTextInput('');
+    }
   }
 
   const markItemBought = itemId => {
-
+    const newItems = items.map((item) => {
+      if (item.id == itemId) {
+        return { ...item, bought: true }
+      }
+      return item;
+    });
+    setItems(newItems);
   }
 
   const unmarkItemBought = itemId => {
-
+    const newItems = items.map((item) => {
+      if (item.id == itemId) {
+        return { ...item, bought: false }
+      }
+      return item;
+    });
+    setItems(newItems);
   }
 
   const removeItem = itemId => {
-
+    Alert.alert('Excluir Tarefa?',
+      'Confirma a exclusão desta Tarefa?',
+      [
+        {
+          text: 'Sim', onPress: () => {
+            const newItems = items.filter(item => item.id != itemId);
+            setItems(newItems);
+          }
+        },
+        {
+          text: 'Cancelar', style: 'cancel'
+        }
+      ]
+    )
   }
 
   const removeAll = () => {
     Alert.alert(
-      "Limpar Lista?", 
-      "Confirma a exclusão de todas as tarefas de sua lista?",
+      "Limpar Lista?",
+      "Confirma a exclusão de todas as Tarefas de sua lista?",
       [{
         text: 'Sim',
         onPress: () => { setItems([]) }
@@ -61,21 +118,21 @@ export default function Home() {
     <SafeAreaView style={{ flex: 1 }}>
       <ImageBackground
         source={require('../../assets/background.jpg')}
-        resizeMode='repeat'
-        style={{ flex: 1, justifyContent: 'flex-start'}}
+        resizeMode=''
+        style={{ flex: 1, justifyContent: 'flex-start' }}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Lista de Produtos</Text>
+          <Text style={styles.title}>Lista de Tarefas</Text>
           <View>
-            <Ionicons name="trash" size={32} color="#fff" onPress={removeAll} />
+            <Ionicons name="trash" size={32} color="#D10812" onPress={removeAll} />
           </View>
         </View>
 
-        {/* Lista de Produtos */}
+        {/* Lista de Tarefas */}
         <FlatList
           contentContainerStyle={{ padding: 20, paddingBottom: 100, color: '#fff' }}
           data={items}
-          renderItem={({item}) =>
+          renderItem={({ item }) =>
             <ItemList
               item={item}
               markItem={markItemBought}
@@ -91,16 +148,16 @@ export default function Home() {
               color="#fff"
               fontSize={18}
               placeholderTextColor="#aeaeae"
-              placeholder="Digite a tarefa..."
+              placeholder="Digite a Tarefa..."
               value={textInput}
-              onChange={(text) => setTextInput(text)}
+              onChangeText={(text) => setTextInput(text)}
             />
           </View>
           <TouchableOpacity style={styles.iconContainer} onPress={addItem}>
-            <Ionicons name="add" size={36} color="#fff" />
+            <Ionicons name="add" size={36} color="#D10812" />
           </TouchableOpacity>
         </View>
-      </ImageBackground>      
+      </ImageBackground>
     </SafeAreaView>
   )
 }
